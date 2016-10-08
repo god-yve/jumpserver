@@ -1,8 +1,13 @@
 #-*- coding:utf-8 -*-
+from django.http import HttpResponse
 from django.shortcuts import render_to_response, render
 from jasset.models import Asset
 from jumpserver.api import require_role, my_render
 from avazu.models import RegisterUser
+from avazu.avazu_api import add_register_user
+from datetime import datetime, timedelta
+from jumpserver.api import logger
+
 
 # Create your views here.
 
@@ -52,35 +57,35 @@ def list_registered_user(request):
 
 @require_role(role='super')
 def add_register(request):
-    """
-    点击处理页面中的同意按钮后将注册信息写入到jumpserver用户表中
-    """
+    jump_run_log = open('/tmp/jumpserver.log', 'w')
     if request.method == 'GET':
         uid = request.GET.get('id','')
+        print >>jump_run_log, "%s -- GET(add) uid: %s" % (datetime.now(), uid)
         new_user = RegisterUser.objects.get(id=uid)
         msg = add_register_user(new_user)
         return HttpResponse(msg)
-        #return HttpResponse('id: %s, %s:%s(%s)' % (new_user.id, new_user.username, new_user.name, new_user.email))
     else:
         return HttpResponse('improssable!')
 
 
 @require_role(role='super')
 def del_register(request):
-    """
-    点击处理页面中的删除按钮后将注册信息从avazu的注册表中删除注册信息
-    """
+    jump_run_log = open('/tmp/jumpserver.log', 'w+')
     if request.method == "GET":
         user_ids = request.GET.get('id', '')
+        print >>jump_run_log, "%s -- GET del uids: %s" % (datetime.now(),user_ids)
         user_id_list = user_ids.split(',')
     elif request.method == "POST":
         user_ids = request.POST.get('id', '')
+        print >>jump_run_log, "%s -- POST del uids: %s" % (datetime.now(), user_ids)
         user_id_list = user_ids.split(',')
     else:
+        print >>jump_run_log, "%s -- 非GET, 也不是POST请求无法处理的错误" % datetime.now()
         return HttpResponse('错误请求')
     for user_id in user_id_list:
         try:
             user = RegisterUser.objects.get(id=user_id)
+            print >>jump_run_log, "%s -- del user: %s" % (datetime.now(), user.name)
         except:
             return HttpResponse(u'error')
         else:
@@ -88,6 +93,4 @@ def del_register(request):
                 logger.debug(u"删除注册用户 %s " % user.username)
                 user.delete()
                 return HttpResponse(u'删除成功')
-
-
-
+                                            

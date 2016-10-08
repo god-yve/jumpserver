@@ -1,4 +1,9 @@
 #-*- coding:utf-8 -*-
+from jumpserver.api import *
+from juser.models import User
+from juser.user_api import *
+from jperm.perm_api import get_role_push_host
+from datetime import datetime
 
 def add_register_user(register_user):
     # 姓名
@@ -22,7 +27,7 @@ def add_register_user(register_user):
 
     check_user_is_exist = User.objects.filter(username=username)
     if check_user_is_exist:
-        error = u'用户 %s 已存在' % username
+        error = u'用户名 %s 已存在' % username
         raise ServerError
     try:
         # 向jumpserver user表添加注册用户
@@ -32,7 +37,8 @@ def add_register_user(register_user):
                                    groups=groups, admin_groups=admin_groups,
                                    ssh_key_pwd=ssh_key_pwd,
                                    is_active=is_active,
-                                   date_joined=datetime.datetime.now())
+                                   date_joined=datetime.now())
+        print >>error_log, "%s -- 向数据库添加用户: %s" % (datetime.now(), user.name)
         # 在堡垒机上添加系统用户账号
         server_add_user(username=username, ssh_key_pwd=ssh_key_pwd)
 
@@ -56,6 +62,12 @@ def add_register_user(register_user):
     roles_select = [1]                                    # 角色: admin
     rule_name = user.name                                 # 使用用户名作为授权规则名
     rule_comment = u'给' + name + u'的授权.'              # 规则说明
+    print >>error_log, "%s -- 用户名: %s, 用户组: %s,角色: %s, 主机列表: %s  " % (datetime.now(),
+                         users_select,
+                         user_groups_select, 
+                         roles_select,
+                         assets_select,
+                         )
 
     try:
         # 查询已建立的授权中是否已经有同名规则
