@@ -11,11 +11,11 @@ def add_register_user(register_user):
     # 账号名
     username = register_user.username
     password = register_user.password
-    group = UserGroup(name='dev')
+    #group = UserGroup(name='dev')
     email = register_user.email
     uuid_r = uuid.uuid4().get_hex()
     ssh_key_pwd = PyCrypt.gen_rand_pass(16)
-    groups = [1]
+    groups = [ ]
     admin_groups = []
     # 普通用户
     role = 'CU'
