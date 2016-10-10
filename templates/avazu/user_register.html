@@ -32,10 +32,8 @@
             <h3>注册信息</h3>
             <form class="m-t" role="form" action="" method="post">
                 <div class="form-group">
-                    <label for="username" class="col-sm-2 control-label">用户名<span class="red-fonts">*</span></label>
-                    <div class="col-sm-8"> 
+                    <!-- <label for="username" class="col-sm-2 control-label">用户名<span class="red-fonts">*</span></label> -->
                     <input type="text" id="username" name='username' class="form-control" placeholder="用户名" required="">
-                    </div>
                 </div> 
                 <div class="form-group">
                     <input type="text" name='name' class="form-control" placeholder="姓名" required="">
@@ -48,11 +46,10 @@
                 </div>
 
                  <div>
-                 <div class="form-group" style="float:left" > 
-                   <label for="expire" align="left">账号有效期</label> 
-                 </div> 
-                <div class="form-group" style="float:right"> 
-                    <select name='expire' size="1" style="width:200px;"  class="form-control" placeholder="有效期" required="">
+                <div class="form-group">
+                   <!-- <label for="expire" align="left"><h3>账号有效期</h3></label> -->
+                    <select name='expire' size="1"  class="form-control" placeholder="有效期" required="">
+                          <option value= 0>账号有效期</option>
                           <option value = 2>2小时</option>
                           <option value = 4>4小时</option>
                           <option value = 6>6小时</option>
@@ -68,7 +65,8 @@
                    </select>
                 </div>
                 <div class="form-group">
-                <select name="hosts" class="chosen-select form-control m-b" placeholder="申请访问的主机列表" required="" multiple>
+                <label for="expire" align="left"><h3>申请服务器列表</h3></label> 
+                <select name="hosts" class="chosen-select form-control m-b" placeholder="申请访问的主机列表" size="10" required="" multiple>
                 {% for host in hosts%}
                     <option value="{{ host.ip }}" >{{ host.ip }}</option>
                 {% endfor %}
