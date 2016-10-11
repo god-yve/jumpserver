@@ -94,3 +94,7 @@ def del_register(request):
                 user.delete()
                 return HttpResponse(u'删除成功')
                                             
+
+@require_role(role='user')
+def asset_apply(request):
+    pass
