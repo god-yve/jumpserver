@@ -7,6 +7,8 @@ from avazu.models import RegisterUser
 from avazu.avazu_api import add_register_user
 from datetime import datetime, timedelta
 from jumpserver.api import logger
+from juser.models import User
+from jasset.models import Asset
 
 
 # Create your views here.
@@ -97,4 +99,16 @@ def del_register(request):
 
 @require_role(role='user')
 def asset_apply(request):
-    pass
+    error = ""
+    msg = "" 
+    
+    # 取得登陆用户的ID
+    uid = request.user.id
+    # 取得用户ID对应的User对象
+    user = User.objects.get(id=uid)
+    # 通过User对象获取用户所有的授权规则
+    rule = user.perm_rule.all()[0]
+    # 所有主机
+    assets = Asset.objects.all()
+
+    return render(request, 'avazu/asset_apply.html', locals())
