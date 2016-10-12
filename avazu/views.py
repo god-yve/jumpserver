@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response, render
 from jasset.models import Asset
 from jumpserver.api import require_role, my_render
-from avazu.models import RegisterUser
+from avazu.models import RegisterUser, ApplyHosts
 from avazu.avazu_api import add_register_user
 from datetime import datetime, timedelta
 from jumpserver.api import logger
@@ -101,7 +101,6 @@ def del_register(request):
 def asset_apply(request):
     error = ""
     msg = "" 
-    
     # 取得登陆用户的ID
     uid = request.user.id
     # 取得用户ID对应的User对象
@@ -110,5 +109,22 @@ def asset_apply(request):
     rule = user.perm_rule.all()[0]
     # 所有主机
     assets = Asset.objects.all()
+    asset_appled = []
+    
+    if request.method == "POST": 
+        asset_selected = request.POST.getlist('asset')   
+        if asset_selected == []: 
+            error = "请至少选择一台主机"
+        else: 
+            for asset_id in asset_selected:
+                asset = Asset.objects.get(id=asset_id)
+                if asset not in rule.asset.all():
+                    msg = msg + asset.ip + " "  
 
+            if msg != "":
+                new_apply = ApplyHosts(username=user.username, hosts=msg,is_added=0)
+                new_apply.save()
+                msg = "申请已受理, 请耐心等待!"
+                
     return render(request, 'avazu/asset_apply.html', locals())
+    
