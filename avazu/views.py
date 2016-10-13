@@ -13,9 +13,10 @@ from jasset.models import Asset
 
 # Create your views here.
 
-def add_registered_user(request):
+def user_signup(request):
     u"""
-    显示并处理用户注册
+    用户注册页面处理函数
+    将用户信息保存到RegisterUser model
     """
     error = ''
     msg = ''
@@ -53,7 +54,8 @@ def add_registered_user(request):
 @require_role(role='super')
 def list_registered_user(request):
     u"""
-    列出所有等待处理的注册用户信息
+    在等待处理页面中列出所有等待处理的注册用户信息
+    
     """
     registered_users = RegisterUser.objects.filter(is_added=0)
     applyhosts = ApplyHosts.objects.filter(is_added=0) 
@@ -141,8 +143,61 @@ def asset_apply(request):
 
 @require_role(role='super')
 def add_applyhost(request):
-    pass
+    u'''
+     处理主机申请
+     点击"同意添加"按钮后将更新用户的授权规则, 添加主机授权给用户
 
+     '''
+    jump_run_log = open('/tmp/jumpserver.log', 'w+')
+    jump_run_log.write("%s - 调用函数: del_applyhost\n" % datetime.now())
+    if request.method == "GET":
+        # 取得记录在表中的ID
+        apply_id = request.GET.get('id')
+        jump_run_log.write('%s - 操作的记录ID是: %s\n' % (datetime.now(), apply_id))
+        new_apply = ApplyHosts.objects.get(id=int(apply_id))
+        jump_run_log.write('%s - 操作的记录内容是: %s, %s, %s\n' % (
+                    datetime.now(), new_apply.id, new_apply.username, new_apply.hosts))
+        # 根据username取得User对象 
+        apply_user = User.objects.get(username=new_apply.username)
+        jump_run_log.write('%s - 对应的用户是(id,username):%s, %s\n' % (
+                          datetime.now(), apply_user.id, apply_user.username))
+        # 从User对象上取出用户所有授权规则(PermRule)
+        rule_collections = apply_user.perm_rule.all()
+        # 假设用户只有一个授权规则
+        rule = rule_collections[0]
+        jump_run_log.write('%s - 用户对应的授权规则是: %s\n' % (datetime.now(), rule.name))
+        # 申请授权的主机IP列表
+        hosts_ip = new_apply.hosts.split()
+         
+        # 检查每一个申请的主机是否已经存在于授权规则
+        # 如果没有则将主机添加到授权, 否则就跳过
+        for ip in hosts_ip:
+            # 取得IP对应的Asset对象
+            asset = Asset.objects.get(ip=ip)
+            # 检查规则中是否已经存在主机
+            # 没有则添加
+            if asset not in rule.asset.all():
+                 rule.asset.add(asset)
+                 jump_run_log.write('%s - 添加主机(规则, 主机):%s, %s\n' % (
+                                  datetime.now(), rule.name, asset.ip))
+         
+                   
+ 
+        jump_run_log.write("%s - 所有主机都已添加完成" % (datetime.now())) 
+        # 将记录标记为已处理, 并更新记录状态
+        new_apply.is_added = 1
+        new_apply.save()
+        jump_run_log.write("%s - 主机申请记录更新为已处理" % (datetime.now())) 
+        return HttpResponse('OK: 主机以添加成功')
+
+    elif request.method == "POST":
+        # 取得记录在表中的ID
+        apply_id = request.GET.get('id')
+    
+    else:
+         return HttpResponse("ERROR: 不可能除GET和POST之外的其它方法!")
+
+    return HttpResponse("OK: 主机授权已更新")
 
 
 @require_role(role='super')
