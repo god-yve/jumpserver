@@ -20,6 +20,8 @@ def add_registered_user(request):
     error = ''
     msg = ''
     hosts = Asset.objects.all()
+    jump_run_log = open('/tmp/jumpserver.log', 'w+')
+    jump_run_log.write("调用函数: add_registered_user\n")
     if request.method == 'POST':
         username = request.POST.get('username')
         name = request.POST.get('name')
@@ -54,6 +56,7 @@ def list_registered_user(request):
     列出所有等待处理的注册用户信息
     """
     registered_users = RegisterUser.objects.filter(is_added=0)
+    applyhosts = ApplyHosts.objects.filter(is_added=0) 
     return my_render('avazu/list_registered_user.html', locals(), request)
 
 
@@ -73,6 +76,8 @@ def add_register(request):
 @require_role(role='super')
 def del_register(request):
     jump_run_log = open('/tmp/jumpserver.log', 'w+')
+    jump_run_log.write("调用函数: del_register\n")
+    print >>jump_run_log, "调用函数: del_register\n" 
     if request.method == "GET":
         user_ids = request.GET.get('id', '')
         print >>jump_run_log, "%s -- GET del uids: %s" % (datetime.now(),user_ids)
@@ -86,7 +91,7 @@ def del_register(request):
         return HttpResponse('错误请求')
     for user_id in user_id_list:
         try:
-            user = RegisterUser.objects.get(id=user_id)
+            user = RegisterUser.objects.get(id=int(user_id))
             print >>jump_run_log, "%s -- del user: %s" % (datetime.now(), user.name)
         except:
             return HttpResponse(u'error')
@@ -128,3 +133,53 @@ def asset_apply(request):
                 
     return render(request, 'avazu/asset_apply.html', locals())
     
+
+
+
+
+
+
+@require_role(role='super')
+def add_applyhost(request):
+    pass
+
+
+
+@require_role(role='super')
+def del_applyhost(request):
+    jump_run_log = open('/tmp/jumpserver.log', 'w+')
+    jump_run_log.write("调用函数: del_applyhost\n")
+    if request.method == "GET":
+        ids = request.GET.get('id', '')
+        print >>jump_run_log, "%s -- GET 删除主机申请记录ID: %s\n" % (datetime.now(),ids)
+        id_list = ids.split(',')
+        print >>jump_run_log, "%s -- 删除记录ID列表: %s\n" % (datetime.now(),id_list)
+
+    elif request.method == "POST":
+        ids = request.POST.get('id', '')
+        print >>jump_run_log, "%s -- POST 删除主机申请记录ID: %s\n" % (datetime.now(), ids)
+        id_list = ids.split(',')
+        print >>jump_run_log, "%s -- 删除记录ID列表: %s\n" % (datetime.now(),id_list)
+    else:
+        print >>jump_run_log, "%s -- 非GET, 也不是POST请求无法处理的错误\n" % datetime.now()
+        return HttpResponse('错误请求')
+
+    print >>jump_run_log, "%s -- 准备进入for循环" % datetime.now()
+    for id in id_list:
+        print >>jump_run_log, "%s -- 进入到for循环" % datetime.now()
+        try:
+            applyhost = ApplyHosts.objects.get(id=int(id))
+            print >>jump_run_log, "%s -- 删除主机申请记录: %s, %s\n" % (datetime.now(), applyhost.username, applyhost.hosts)
+        except:
+            print >>jump_run_log, "获取记录信息失败\n"
+            return HttpResponse(u'error:无法获取申请记录信息')
+
+        try:
+            applyhost.delete()
+            print >>jump_run_log, "%s -- %s: %s 主机申请记录成功删除\n" % (datetime.now(), applyhost.username, applyhost.hosts)
+        except:
+            print >>jump_run_log, "%s -- 调用delete()失败\n" % datetime.now()
+            return HttpResponse(u'error: 删除失败')
+          
+        return HttpResponse(u'删除成功')
+

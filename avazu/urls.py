@@ -7,5 +7,8 @@ urlpatterns = patterns('avazu.views',
     url(r'^register/list/$', 'list_registered_user', name='list_registered_user'),
     url(r'^register/add/$', 'add_register', name='add_register'),
     url(r'^register/del/$', 'del_register', name='del_register'),
-    url(r'^register/assets/apply$', 'asset_apply', name='asset_apply'),
+    url(r'^host/add/$', 'add_applyhost', name='add_applyhost'),
+    url(r'^host/del/$', 'del_applyhost', name='del_applyhost'),
+    url(r'^assets/apply$', 'asset_apply', name='asset_apply'),
+
 )

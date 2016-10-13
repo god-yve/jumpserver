@@ -11,7 +11,7 @@
                 <ul class="nav nav-second-level">
                     <li class="group"><a href="{% url 'user_group_list' %}">查看用户组</a></li>
                     <li class="user"><a href="{% url 'user_list' %}">查看用户<span class="label {% ifequal user_active_num user_total_num %}label-primary {% else %}label-warning {% endifequal %}pull-right">{{ user_active_num }}/{{ user_total_num }}</span></a></li>
-                    <li class="user"><a href="{% url 'list_registered_user' %}">待审核用户</a></li>
+                    <li class="user"><a href="{% url 'list_registered_user' %}">待处理申请</a></li>
                 </ul>
             </li>
             <li id="jasset">

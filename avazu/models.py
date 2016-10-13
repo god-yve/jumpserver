@@ -9,7 +9,7 @@ class RegisterUser(models.Model):
     hosts = models.CharField(max_length=2500)
     email = models.EmailField(max_length=50)
     expire_date = models.DateTimeField()
-    registered_date = models.DateTimeField(auto_now_add=True)
+    #registered_date = models.DateTimeField(auto_now_add=True)
     is_added = models.SmallIntegerField(default=0)
   
     def __unicode__(self):
