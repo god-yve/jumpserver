@@ -15,30 +15,28 @@ from jasset.models import Asset
 
 def user_signup(request):
     u"""
-    用户注册页面处理函数
-    将用户信息保存到RegisterUser model
-    只负责创建账号, 不进行授权
+    保存注册用户信息
+    将所有注册用户信息保存在单独一张表中等待处理
+    
     """
     error = ''
     msg = ''
-    # 默认授权主机位空 
-    hosts = ''
     jump_run_log = open('/tmp/jumpserver.log', 'w+')
     jump_run_log.write("调用函数: add_registered_user\n")
     if request.method == 'POST':
         username = request.POST.get('username')
         name = request.POST.get('name')
         email = request.POST.get('email')
-        expire_date = datetime.now() + timedelta(hours=int(request.POST.get('expire')))
+        expire = int(request.POST.get('expire'))
         password = request.POST.get('password')
 
         # 所有字段不能为空
-        if all((username, name, email, password, expire_date)):
+        if all((username, name, email, password, expire)):
             # 检查用户名是否已经存在
             if len(RegisterUser.objects.filter(username=username)) == 0:
                 try:
                     # 调用api接口创建用户账号
-                    new_user = RegisterUser(username=username, name=name, email=email, password=password, hosts=hosts, expire_date=expire_date)
+                    new_user = RegisterUser(username=username, name=name, email=email, password=password, expire=expire)
                     new_user.save()
                 except Exception, e:
                     error = u'ERROR: 服务器错误: ' + str(e)
@@ -55,7 +53,7 @@ def user_signup(request):
 @require_role(role='super')
 def list_registered_user(request):
     u"""
-    在等待处理页面中列出所有等待处理的注册用户信息
+    列出所有等待处理的注册用户及主机申请记录信息
     
     """
     registered_users = RegisterUser.objects.filter(is_added=0)
@@ -65,6 +63,10 @@ def list_registered_user(request):
 
 @require_role(role='super')
 def add_register(request):
+    """
+    为注册用户生成jumpserver账号
+
+    """
     jump_run_log = open('/tmp/jumpserver.log', 'w')
     if request.method == 'GET':
         uid = request.GET.get('id','')
@@ -78,30 +80,33 @@ def add_register(request):
 
 @require_role(role='super')
 def del_register(request):
-    jump_run_log = open('/tmp/jumpserver.log', 'w+')
-    jump_run_log.write("调用函数: del_register\n")
-    print >>jump_run_log, "调用函数: del_register\n" 
+    """
+    删除注册信息
+    不同意用户的注册申请
+
+    """
+    logger.debug("开始删除注册记录, 执行函数: del_register")
     if request.method == "GET":
         user_ids = request.GET.get('id', '')
-        print >>jump_run_log, "%s -- GET del uids: %s" % (datetime.now(),user_ids)
+        logger.debug("%s -- GET del uids: %s" % (datetime.now(),user_ids))
         user_id_list = user_ids.split(',')
     elif request.method == "POST":
         user_ids = request.POST.get('id', '')
-        print >>jump_run_log, "%s -- POST del uids: %s" % (datetime.now(), user_ids)
+        looger.debug("%s -- POST del uids: %s" % (datetime.now(), user_ids))
         user_id_list = user_ids.split(',')
     else:
-        print >>jump_run_log, "%s -- 非GET, 也不是POST请求无法处理的错误" % datetime.now()
+        logger.debug("%s -- 非GET, 也不是POST请求无法处理的错误" % datetime.now())
         return HttpResponse('错误请求')
     for user_id in user_id_list:
         try:
             user = RegisterUser.objects.get(id=int(user_id))
-            print >>jump_run_log, "%s -- del user: %s" % (datetime.now(), user.name)
+            logger.debug("%s -- del user: %s" % (datetime.now(), user.name))
         except:
             return HttpResponse(u'error')
         else:
             if user and user.username != 'admin':
-                logger.debug(u"删除注册用户 %s " % user.username)
                 user.delete()
+                logger.debug(u"删除注册记录:%s(%s) " % (user.name, user.username))
                 return HttpResponse(u'删除成功')
                                             
 
