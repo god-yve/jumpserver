@@ -6,10 +6,9 @@ class RegisterUser(models.Model):
     username = models.CharField(max_length=50)
     name =  models.CharField(max_length=50)
     password = models.CharField(max_length=30)
-    expire = models.PositiveSmallIntegerField()
     email = models.EmailField(max_length=50)
-    expire_date = models.DateTimeField()
-    #registered_date = models.DateTimeField(auto_now_add=True)
+    expire = models.PositiveSmallIntegerField()
+    register_date = models.DateTimeField(auto_now_add=True)
     is_added = models.SmallIntegerField(default=0)
   
     def __unicode__(self):
