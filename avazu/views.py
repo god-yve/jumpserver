@@ -70,15 +70,16 @@ def add_register(request):
     logger.debug('添加注册用户到jumpserver, 执行函数: add_register')
     if request.method == 'GET':
         uid = request.GET.get('id','')
+        logger.debug('选中的用户ID为: %s' % uid)
         # 取出选中的注册用户记录
         try: 
             new_user = RegisterUser.objects.get(id=uid)
             logger.debug("添加用户: %s(%s)", (new_user.username, new_user.name))
-            msg = add_register_user(new_user)
-            return HttpResponse(msg)
-        except e:
+        except:
             logger.debug("ERROR: 在注册用户表(registereduser)中没有找到用户, 添加失败")
             return HttpResponse("ERROR: 注册失败")
+        msg = add_register_user(new_user)
+        return HttpResponse(msg)
     else:
         return HttpResponse('improssable!')
 
@@ -117,12 +118,17 @@ def del_register(request):
 
 @require_role(role='user')
 def asset_apply(request):
+    """
+    普通用户可以对需要访问的主机提出申请
+
+    """
     error = ""
     msg = "" 
     # 取得登陆用户的ID
     uid = request.user.id
     # 取得用户ID对应的User对象
     user = User.objects.get(id=uid)
+    logger.debug("访问主机申请")
     # 通过User对象获取用户所有的授权规则
     rule = user.perm_rule.all()[0]
     # 所有主机

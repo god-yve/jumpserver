@@ -1,6 +1,8 @@
 #-*- coding:utf-8 -*-
 from jumpserver.api import *
 from juser.models import User
+from jperm.models import PermRule, PermRole
+from jasset.models import AssetGroup
 from juser.user_api import *
 from jperm.perm_api import get_role_push_host
 from datetime import datetime
@@ -43,8 +45,54 @@ def add_register_user(register_user):
         logger.debug("操作系统账号添加成功: %s", user.username )
 
     except ServerError,e:
-        logger.debug(u'jumpserver用户账号添加失败: %s' %  username)
+        loggeo.debug(u'jumpserver用户账号添加失败: %s' %  username)
         raise ServerError
+
+    # 开始为用户创建授权规则(PermRule)
+    # 默认为每一个新注册用户创建一个与账号名相同的授权规则
+    # 该授权中含有一个名为'zero'的资产组, 资产组中所包含的主机数量为0
+    # 
+
+    rule_name = user.username                         
+    # 授权规则说明信息
+    rule_comment = u'给(%s)的授权. 创建于: %s' %  (user.name, datetime.now())        # 授权规则说明
+    # 创建一个授权规则对象, 随后更新授权信息
+    new_rule = PermRule(name=rule_name, comment=rule_comment)
+    new_rule.save()
+    logger.debug("%s :授权规则对象创建成功" % new_rule.name)
+
+    try:
+        # 授权规则对应的用户
+        rule_to_user = user
+        logger.debug("规则对应的用户为 %s" % user.username)
+        # 'zero'资产组
+        # 默认每个注册用户都会被赋予'zero'资产组
+        #
+        asset_group = AssetGroup.objects.get(name = 'zero')            
+        logger.debug("规则对应的资产组为: %s" % asset_group.name)
+    except e:
+        logger.debug("ERROR: 无法找到用户或资产组: %s" % e)
+        return "ERROR: 更新授权规则失败"
+
+    # 系统用户, 账号关联到的系统账号(jperm_permrole)
+    # 1, admin
+    # 2, dba
+    # 默认使用: admin
+    system_role = PermRole.objects.get(name="admin")
+    logger.debug("规则对应的系统角色为: %s" % system_role.name)
+    # 将授权规则与用户, 资产组, 系统角色相关联
+    #
+    new_rule.user.add(rule_to_user)
+    new_rule.asset_group.add(asset_group)
+    new_rule.role.add(system_role)
+    try: 
+        new_rule.save()
+        logger.debug("%s :授权规则成功更新并保存" % new_rule.name) 
+    except Exception, e:
+        logger.debug("ERROR: 授权规则保存失败, %s" % e) 
+        return "ERROR: 授权规则保存失败, %s" % e
+        
+ 
     # 更新注册用户状态为已处理
     register_user.is_added = 1
     register_user.save()
