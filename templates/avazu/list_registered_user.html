@@ -30,9 +30,9 @@
                                 </th>
                                 <th class="text-center">用户名</th>
                                 <th class="text-center">姓名</th>
-                                <th class="text-center">邮件地址</th>
-                                <th class="text-center">有效期</th>
-                                <th class="text-center">申请主机</th>
+                                <th class="text-center">邮箱</th>
+                                <th class="text-center">有效期(小时)</th>
+                                <th class="text-center">注册时间</th>
                                 <th class="text-center">操作</th>
                             </tr>
                         </thead>
@@ -45,10 +45,8 @@
                                 <td class="text-center">{{ user.username }}</td>
                                 <td class="text-center"> {{ user.name }} </td>
                                 <td class="text-center"> {{ user.email }} </td>
-                                <td class="text-center"> {{ user.expire_date|date:"Y-m-d H:G:s T" }} </td>
-                                <td class="text-center"> 
-                                {{ user.hosts }}
-                                </td>
+                                <td class="text-center"> {{ user.expire }} </td>
+                                <td class="text-center"> {{ user.register_date|date:"Y-m-d H:G:s T" }} </td>
                                 <td class="text-center">
                                     <a value="{% url 'add_register' %}?id={{ user.id }}" class="btn btn-xs btn-info add">添加记录</a>
                                     <a value="{% url 'del_register' %}?id={{ user.id }}" class="btn btn-xs btn-danger del {% if user.username == 'admin' %} disabled {% endif %}">删除记录</a>
