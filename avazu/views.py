@@ -64,16 +64,21 @@ def list_registered_user(request):
 @require_role(role='super')
 def add_register(request):
     """
-    为注册用户生成jumpserver账号
+    为注册用户创建jumpserver账号
 
     """
-    jump_run_log = open('/tmp/jumpserver.log', 'w')
+    logger.debug('添加注册用户到jumpserver, 执行函数: add_register')
     if request.method == 'GET':
         uid = request.GET.get('id','')
-        print >>jump_run_log, "%s -- GET(add) uid: %s" % (datetime.now(), uid)
-        new_user = RegisterUser.objects.get(id=uid)
-        msg = add_register_user(new_user)
-        return HttpResponse(msg)
+        # 取出选中的注册用户记录
+        try: 
+            new_user = RegisterUser.objects.get(id=uid)
+            logger.debug("添加用户: %s(%s)", (new_user.username, new_user.name))
+            msg = add_register_user(new_user)
+            return HttpResponse(msg)
+        except e:
+            logger.debug("ERROR: 在注册用户表(registereduser)中没有找到用户, 添加失败")
+            return HttpResponse("ERROR: 注册失败")
     else:
         return HttpResponse('improssable!')
 
