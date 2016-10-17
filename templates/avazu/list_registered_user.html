@@ -48,7 +48,7 @@
                                 <td class="text-center"> {{ user.expire }} </td>
                                 <td class="text-center"> {{ user.register_date|date:"Y-m-d H:G:s T" }} </td>
                                 <td class="text-center">
-                                    <a href="{% url 'add_register' %}?id={{ user.id }}" class="btn btn-xs btn-info add">添加记录</a>
+                                    <a value="{% url 'add_register' %}?id={{ user.id }}" class="btn btn-xs btn-info add">添加记录</a>
                                     <a value="{% url 'del_register' %}?id={{ user.id }}" class="btn btn-xs btn-danger del {% if user.username == 'admin' %} disabled {% endif %}">删除记录</a>
                                 </td>
                             </tr>
