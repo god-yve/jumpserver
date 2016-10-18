@@ -219,38 +219,36 @@ def add_applyhost(request):
 
 @require_role(role='super')
 def del_applyhost(request):
-    jump_run_log = open('/tmp/jumpserver.log', 'w+')
-    jump_run_log.write("调用函数: del_applyhost\n")
+    logger.debug("调用函数: del_applyhost\n")
     if request.method == "GET":
         ids = request.GET.get('id', '')
-        print >>jump_run_log, "%s -- GET 删除主机申请记录ID: %s\n" % (datetime.now(),ids)
+        logger.debug("GET方法 - 删除主机申请记录ID: %s" % ids)
         id_list = ids.split(',')
-        print >>jump_run_log, "%s -- 删除记录ID列表: %s\n" % (datetime.now(),id_list)
+        logger.debug("删除记录ID列表: %s" % id_list)
 
     elif request.method == "POST":
         ids = request.POST.get('id', '')
-        print >>jump_run_log, "%s -- POST 删除主机申请记录ID: %s\n" % (datetime.now(), ids)
+        logger.debug("POST方法 - 删除主机申请记录ID: %s" % ids)
         id_list = ids.split(',')
-        print >>jump_run_log, "%s -- 删除记录ID列表: %s\n" % (datetime.now(),id_list)
+        logger.debug("删除记录ID列表: %s" % id_list)
     else:
-        print >>jump_run_log, "%s -- 非GET, 也不是POST请求无法处理的错误\n" % datetime.now()
+        logger.debug("非GET, 也不是POST请求无法处理的错误")
         return HttpResponse('错误请求')
 
-    print >>jump_run_log, "%s -- 准备进入for循环" % datetime.now()
     for id in id_list:
-        print >>jump_run_log, "%s -- 进入到for循环" % datetime.now()
+        logger.debug("进入到for循环处理")
         try:
             applyhost = ApplyHosts.objects.get(id=int(id))
-            print >>jump_run_log, "%s -- 删除主机申请记录: %s, %s\n" % (datetime.now(), applyhost.username, applyhost.hosts)
+            logger.debug("删除主机申请记录: %s, %s" % (applyhost.username, applyhost.hosts))
         except:
-            print >>jump_run_log, "获取记录信息失败\n"
+            logger.debug("获取记录信息失败")
             return HttpResponse(u'error:无法获取申请记录信息')
 
         try:
             applyhost.delete()
-            print >>jump_run_log, "%s -- %s: %s 主机申请记录成功删除\n" % (datetime.now(), applyhost.username, applyhost.hosts)
+            logger.debug("%s: %s 主机申请记录成功删除" % (applyhost.username, applyhost.hosts))
         except:
-            print >>jump_run_log, "%s -- 调用delete()失败\n" % datetime.now()
+            logger.debug("ERROR: 调用delete()失败")  
             return HttpResponse(u'error: 删除失败')
           
         return HttpResponse(u'删除成功')
